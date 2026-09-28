@@ -38,7 +38,8 @@ def observe(manifest_path, out):
         if r.get('split','train')=='train':
             points.append(p[valid]); labels.append(mask[valid]); colors.append(rgb[valid])
             for i in ids: counts[str(i)]+=int((mask[valid]==i).sum())
-        frames.append(dict(rgb=rgb,depth=depth,mask=mask,K=K,T=T,points=p,split=r.get('split','train')))
+        frames.append(dict(rgb=rgb,depth=depth,mask=mask,K=K,T=T,points=p,
+                           split=r.get('split','train'),rgb_path=r['rgb']))
         for pth in files.values(): hashes[pth.name]=sha(pth)
     if len(points)<2: raise ValueError('At least two training frames required')
     # Tiny thin parts may contribute only a few pixels in a wide room view;
@@ -58,14 +59,15 @@ def route(c,frames,out):
         n=sum(int(((f['mask']==inst['id'])&(f['depth']>0)).any()) for f in frames if f['split']=='train')
         if n<2: raise ValueError(f"Insufficient multiview evidence for {inst['name']}")
         decisions.append(dict(instance=inst['name'],views=n,provider='projective_tsdf_rgbd',
-          structure='annotated_part_reconstruction',appearance='visibility_checked_rgb_projection',
+          structure='annotated_part_reconstruction',appearance='mesh_rgb_projection + gaussian_bootstrap',
           collision='per_part_AABB_fit_with_minimum_thickness_prior',
           articulation='vertical_hinge_hypothesis' if inst['role']=='hinge_candidate' else 'fixed',
           reason='Registered metric depth and poses are available; surface evidence takes precedence over generation.'))
     dump(out/'routes.json',dict(status='passed',policy='deterministic_evidence_router',decisions=decisions,
       unavailable_routes={'single_rgb':'no image-to-3D model configured; blocked, never silently substituted',
                           'unknown_poses':'SLAM/SfM provider not configured',
-                          '3dgs':'appearance provider not installed; not used as collision geometry'}))
+                          'trained_3dgs':'CUDA splat trainer is optional; bootstrap Gaussian export is always written',
+                          '3dgs_collision':'3DGS is visual-only; L5 requires closed collision geometry'}))
     return decisions
 
 

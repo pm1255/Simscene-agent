@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw
 import trimesh
 from .fixtures import make_capture
 from .stages import observe, route, reconstruct, parts_and_appearance
+from .gaussian import build_gaussian_visual
 from .io import dump, load
 from .dynamics import build_simulation, simulate_path
 from .navigation import build_layout
@@ -113,6 +114,15 @@ def validate(root,c):
     route=load(root/'L2_route/routes.json'); check('L2 every instance has route',len(route['decisions'])==len(c['instances']),len(route['decisions']))
     geo=load(root/'L3_geometry/geometry.json'); check('L3 finite mesh',geo['finite'] and geo['vertices']>0,{'vertices':geo['vertices'],'triangles':geo['triangles']},'re-fuse with smaller voxel or request additional views')
     parts=load(root/'L4_parts/parts.json'); check('L4 part meshes and RGB UV',all(a['triangles']>0 and a['uv_range'][1]>a['uv_range'][0] for a in parts['assets']),len(parts['assets']),'run visibility-aware UV projection again')
+    visual_path = root/'L4_visual'/'visual.json'
+    visual = load(visual_path) if visual_path.exists() else {}
+    visual_ok = (visual.get('status') == 'passed' and visual.get('provider') == 'rgbd_gaussian_bootstrap'
+                 and visual.get('point_count', 0) > 0 and (root/'L4_visual'/'scene.splat.ply').exists()
+                 and (root/'L4_visual'/'transforms.json').exists())
+    check('L4 independent 3DGS visual export', visual_ok,
+          {'provider': visual.get('provider'), 'point_count': visual.get('point_count', 0),
+           'trained': visual.get('trained', False)},
+          'export observed Gaussian initialization or configure a CUDA splat trainer')
     sim=load(root/'L5_simulation/simulation.json'); xml=(root/'L5_simulation/scene.xml').read_text();
     l5_ok=(sim['status']=='passed' and len(sim['geoms'])==len(parts['assets']) and '<mujoco' in xml and sim['runtime']['finite'] and sim['runtime']['steps']>0 and sim['runtime']['njnt']>=1 and sim['runtime']['floor_contacts']>0)
     check('L5 collision, articulation and gravity contact',l5_ok,sim['runtime'],'reject collider/MJCF and rebuild the dynamic probe')
@@ -141,10 +151,17 @@ def run_seven_layers(root, scene='living_room'):
     # L3 reads the exact L1 capture instead of silently regenerating another sequence.
     l3=root/'L3_geometry'; mesh_files=reconstruct(c,frames,points,labels,colors,l3,c['task']['voxel_m'])
     assets=parts_and_appearance(c,frames,points,labels,l3,root/'L4_parts')
+    # Keep the textured Mesh output above unchanged.  L4_visual is an
+    # independent 3DGS-compatible appearance branch; L5 only consumes the
+    # collision proxies and never depends on this branch.
+    visual = build_gaussian_visual(root/'L4_visual', frames, points, colors,
+                                   voxel=max(float(c['task']['voxel_m']) * 0.55, 0.02))
     sim_assets=simulation_assets(c,assets,root/'L5_simulation')
     layout_and_navigation_from_evidence(c,points,labels,assets,sim_assets,root/'L6_layout')
     passed,checks=validate(root,c)
     dump(root/'run_summary.json',dict(status='passed' if passed else 'failed',scene=scene,layer_count=7,layers=LAYER_NAMES,checks=checks,
       source_of_truth='L1_observe/capture/capture.json',reconstruction_provider='L3 projective TSDF + observed-surface marching cubes',
+      visual_provider=visual['provider'],visual_asset='L4_visual/scene.splat.ply',
+      collision_provider='L5 closed collision proxies + MuJoCo',
       agent_policy='structured decisions only; no LLM self-certification'))
     return root/'run_summary.json'

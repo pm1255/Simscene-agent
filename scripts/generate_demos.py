@@ -9,4 +9,7 @@ if __name__ == "__main__":
     print("reconstruction",run_reconstruction(root/"reconstruction"))
     print("physics",run_physics_demo(root/"physics"))
     print("scene",run_scene_reconstruction(root/"scene_reconstruction"))
-    print("seven_layers",run_seven_layers(root/"seven_layer_scene", "living_room"))
+    for scene, directory in [("living_room", "seven_layer_scene"),
+                             ("office", "seven_layer_office"),
+                             ("corridor", "seven_layer_corridor")]:
+        print("seven_layers", scene, run_seven_layers(root/directory, scene))

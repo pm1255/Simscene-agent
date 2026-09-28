@@ -1,0 +1,100 @@
+{
+  "status": "passed",
+  "scene": "living_room",
+  "layer_count": 7,
+  "layers": {
+    "L1_observe": "观测与坐标校验",
+    "L2_route": "证据路由与预算",
+    "L3_geometry": "几何与外观融合",
+    "L4_parts": "部件、补全与纹理",
+    "L5_simulation": "碰撞、质量、关节与仿真资产",
+    "L6_layout": "场景图、占据图与导航",
+    "L7_verify": "独立验收、失败归因与修复"
+  },
+  "checks": [
+    {
+      "name": "L1 calibration and depth coverage",
+      "passed": true,
+      "evidence": 36,
+      "repair": null
+    },
+    {
+      "name": "L2 every instance has route",
+      "passed": true,
+      "evidence": 21,
+      "repair": null
+    },
+    {
+      "name": "L3 finite mesh",
+      "passed": true,
+      "evidence": {
+        "vertices": 31618,
+        "triangles": 61232
+      },
+      "repair": null
+    },
+    {
+      "name": "L4 part meshes and RGB UV",
+      "passed": true,
+      "evidence": 21,
+      "repair": null
+    },
+    {
+      "name": "L5 collision, articulation and gravity contact",
+      "passed": true,
+      "evidence": {
+        "mujoco_version": "3.14.0",
+        "ngeom": 43,
+        "nbody": 23,
+        "njnt": 4,
+        "steps": 1000,
+        "finite": true,
+        "start_probe_z_m": 0.475,
+        "end_probe_z_m": 0.3249732750506344,
+        "floor_contacts": 1460,
+        "hinge_tests": [
+          {
+            "joint": "cabinet_door_hinge",
+            "target_rad": 1.0,
+            "actual_rad": 0.9643376180813719,
+            "passed": true
+          }
+        ],
+        "gravity_contact_passed": true
+      },
+      "repair": null
+    },
+    {
+      "name": "L6 navigation route",
+      "passed": true,
+      "evidence": {
+        "cells": 109,
+        "unknown_cells": 332
+      },
+      "repair": null
+    },
+    {
+      "name": "L7 independent path recheck",
+      "passed": true,
+      "evidence": {
+        "geometry_recheck": {
+          "passed": true,
+          "errors": [],
+          "minimum_clearance_m": 0.10998521435025996,
+          "samples": 959
+        },
+        "rollout": {
+          "steps": 7724,
+          "finite": true,
+          "obstacle_contact_events": 0,
+          "final_goal_error_m": 0.053736655108693895,
+          "passed": true
+        }
+      },
+      "repair": null
+    }
+  ],
+  "source_of_truth": "L1_observe/capture/capture.json",
+  "reconstruction_provider": "L3 projective TSDF + observed-surface marching cubes",
+  "agent_policy": "structured decisions only; no LLM self-certification"
+}

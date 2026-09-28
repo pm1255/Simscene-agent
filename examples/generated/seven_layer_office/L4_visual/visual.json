@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "provider": "rgbd_gaussian_bootstrap",
+  "format": "3DGS-compatible ASCII PLY",
+  "trained": false,
+  "point_count": 37443,
+  "voxel_m": 0.035750000000000004,
+  "source": "registered L1 RGB-D observations",
+  "collision_source": "L5 collision proxies remain independent",
+  "preview": "gaussian_preview.png",
+  "training_upgrade": {
+    "command": "ns-train splatfacto --data transforms.json",
+    "requires": "CUDA PyTorch with Nerfstudio or an equivalent gsplat trainer",
+    "replace": "scene.splat.ply and keep transforms.json"
+  },
+  "limitations": [
+    "bootstrap splats retain observed surfaces only",
+    "moving robot pixels must be masked before training a static scene",
+    "the hosted preview is a CPU sanity render, not a trained novel-view render"
+  ]
+}

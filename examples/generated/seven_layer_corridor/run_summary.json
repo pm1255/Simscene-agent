@@ -40,6 +40,16 @@
       "repair": null
     },
     {
+      "name": "L4 independent 3DGS visual export",
+      "passed": true,
+      "evidence": {
+        "provider": "rgbd_gaussian_bootstrap",
+        "point_count": 37591,
+        "trained": false
+      },
+      "repair": null
+    },
+    {
       "name": "L5 collision, articulation and gravity contact",
       "passed": true,
       "evidence": {
@@ -96,5 +106,8 @@
   ],
   "source_of_truth": "L1_observe/capture/capture.json",
   "reconstruction_provider": "L3 projective TSDF + observed-surface marching cubes",
+  "visual_provider": "rgbd_gaussian_bootstrap",
+  "visual_asset": "L4_visual/scene.splat.ply",
+  "collision_provider": "L5 closed collision proxies + MuJoCo",
   "agent_policy": "structured decisions only; no LLM self-certification"
 }

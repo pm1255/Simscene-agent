@@ -99,3 +99,18 @@ L3 的相机投影、RGB-D 融合接口与 [Open3D RGB-D integration](https://ww
 ## License
 
 Apache-2.0（详见 `LICENSE`）。
+
+
+## CUDA 3DGS 训练示例
+
+在 CUDA GPU 上，可以使用 `scripts/train_gsplat.py` 将 RGB-D 输入训练成独立的 3DGS 视觉表示；该表示只用于渲染，Mesh、碰撞体和 MuJoCo 验收保持不变。
+
+```bash
+python3 -m pip install gsplat
+torchrun --nproc_per_node=1 scripts/train_gsplat.py \
+  --capture examples/generated/tum_pioneer_360_reconstruction/capture \
+  --out examples/generated/tum_pioneer_360_reconstruction/run/L4_visual/gsplat_trained \
+  --steps 3000 --frame-stride 2 --max-points 80000
+```
+
+本仓库还包含一次 RTX 4090 eval 训练结果：[训练日志](examples/generated/tum_pioneer_360_reconstruction/run/L4_visual/eval_gsplat/training.json)、[多视角对比图](examples/generated/tum_pioneer_360_reconstruction/run/L4_visual/eval_gsplat/trained_vs_input_sheet.jpg) 和 [3DGS PLY](examples/generated/tum_pioneer_360_reconstruction/run/L4_visual/eval_gsplat/scene_trained_gsplat.splat.ply)。

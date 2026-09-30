@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "trained": true,
+  "trainer": "gsplat_cuda_ddp",
+  "points": 50000,
+  "steps": 3000,
+  "world_size": 1,
+  "frame_stride": 2,
+  "voxel_m": 0.02,
+  "last_loss": 0.05429854243993759,
+  "seconds": 99.28,
+  "output": "scene_trained_gsplat.splat.ply",
+  "physics_note": "Gaussian output is visual only; L3 mesh and L5 collision assets remain unchanged.",
+  "limitations": [
+    "RGB-D initialized cloud; unseen surfaces cannot be recovered",
+    "this first trainer uses fixed point count and no opacity-based densification",
+    "moving objects should be masked for a static-scene training run"
+  ]
+}
